@@ -15,6 +15,7 @@ fn build_wasi(src: &str, dst: &'static str) -> Result<PathBuf> {
         .arg("build")
         .arg("--color=always")
         .arg("--target=wasm32-wasi")
+        .arg("--target-dir=./target") // allow workspace-level parallel building (avoid from begin locked)
         .arg("--lib")
         .arg("--release")
         .status()?

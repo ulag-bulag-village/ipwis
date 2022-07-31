@@ -11,5 +11,6 @@ members = [
     "modules/task/common",
     "modules/task/common/wasi",
     "modules/task/demo",
+    "modules/task/entrypoint",
 ]
 # default-members = ["runtime"]

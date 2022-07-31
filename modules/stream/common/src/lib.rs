@@ -87,7 +87,7 @@ impl AsyncRead for ExternReader {
 impl Drop for ExternReader {
     fn drop(&mut self) {
         if let Err(error) = unsafe { io::request::ReaderRelease { id: self.id }.syscall() } {
-            warn!("failed to release the ExternReader: {:x}", self.id);
+            warn!("failed to release the ExternReader: {:x}: {error}", self.id);
         }
     }
 }
@@ -145,7 +145,7 @@ impl AsyncWrite for ExternWriter {
 impl Drop for ExternWriter {
     fn drop(&mut self) {
         if let Err(error) = unsafe { io::request::WriterRelease { id: self.id }.syscall() } {
-            warn!("failed to release the ExternWriter: {:x}", self.id);
+            warn!("failed to release the ExternWriter: {:x}: {error}", self.id);
         }
     }
 }

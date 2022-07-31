@@ -1,134 +1,56 @@
-#![cfg(target_os = "wasi")]
+#[ipwis_modules_task_entrypoint::entrypoint]
+pub async fn main(inputs: ObjectData) -> ::ipis::core::anyhow::Result<ObjectData> {
+    println!("{:?}", inputs);
 
-#[allow(clippy::missing_safety_doc)]
-mod memory {
-    use std::alloc;
+    // no-stream module (small)
+    let instant = ::std::time::Instant::now();
+    {
+        let mut src = "hello world!".as_bytes();
 
-    #[no_mangle]
-    pub unsafe extern "C" fn __ipwis_alloc(size: usize, align: usize) -> *mut u8 {
-        alloc::alloc(alloc::Layout::from_size_align_unchecked(size, align))
+        let mut dst = Vec::new();
+        ::ipis::tokio::io::copy(&mut src, &mut dst).await?;
+
+        println!("{}", String::from_utf8(dst)?);
     }
+    println!("stream module (small) = {:?}", instant.elapsed());
 
-    #[no_mangle]
-    pub unsafe extern "C" fn __ipwis_alloc_zeroed(size: usize, align: usize) -> *mut u8 {
-        alloc::alloc_zeroed(alloc::Layout::from_size_align_unchecked(size, align))
+    // no-stream module (large)
+    let instant = ::std::time::Instant::now();
+    {
+        let src = vec![42u8; 1_000_000_000];
+
+        let mut dst = Vec::new();
+        ::ipis::tokio::io::copy(&mut src.as_slice(), &mut dst).await?;
+
+        assert_eq!(src.len(), dst.len());
     }
+    println!("stream module (large) = {:?}", instant.elapsed());
 
-    #[no_mangle]
-    pub unsafe extern "C" fn __ipwis_dealloc(ptr: *mut u8, size: usize, align: usize) {
-        alloc::dealloc(ptr, alloc::Layout::from_size_align_unchecked(size, align))
+    // stream module (small)
+    let instant = ::std::time::Instant::now();
+    {
+        let src = "hello world!".as_bytes();
+        let mut reader = ExternReader::try_from(src)?;
+
+        let mut dst = Vec::new();
+        ::ipis::tokio::io::copy(&mut reader, &mut dst).await?;
+
+        println!("{}", String::from_utf8(dst)?);
     }
+    println!("stream module (small) = {:?}", instant.elapsed());
 
-    #[no_mangle]
-    pub unsafe extern "C" fn __ipwis_realloc(
-        ptr: *mut u8,
-        size: usize,
-        align: usize,
-        new_size: usize,
-    ) -> *mut u8 {
-        alloc::realloc(
-            ptr,
-            alloc::Layout::from_size_align_unchecked(size, align),
-            new_size,
-        )
+    // stream module (large)
+    let instant = ::std::time::Instant::now();
+    {
+        let src = vec![42u8; 1_000_000_000];
+        let mut reader = ExternReader::try_from(src.as_slice())?;
+
+        let mut dst = Vec::new();
+        ::ipis::tokio::io::copy(&mut reader, &mut dst).await?;
+
+        assert_eq!(src.len(), dst.len());
     }
-}
+    println!("stream module (large) = {:?}", instant.elapsed());
 
-#[allow(clippy::missing_safety_doc)]
-mod syscall {
-    use ipis::{core::signed::IsSigned, object::data::ObjectData, pin::PinnedInner};
-    use ipwis_modules_stream_common::ExternReader;
-    use ipwis_modules_task_common_wasi::{
-        extern_data::{ExternData, ExternDataRef},
-        extrinsics::syscall,
-    };
-
-    #[no_mangle]
-    unsafe extern "C" fn __ipwis_syscall(
-        _handler: ExternDataRef,
-        inputs: ExternDataRef,
-        outputs: ExternDataRef,
-        errors: ExternDataRef,
-    ) -> ExternDataRef {
-        let inputs = inputs as *const ExternData;
-        let outputs = outputs as *mut ExternData;
-        let errors = errors as *mut ExternData;
-
-        let inputs: ObjectData = PinnedInner::deserialize_owned((*inputs).into_slice()).unwrap();
-
-        let (buf, target, status_code) = match __ipwis_main(inputs) {
-            Ok(data) => {
-                let buf = Box::leak(data.to_bytes().unwrap().into_boxed_slice());
-                (buf, &mut *outputs, syscall::SYSCALL_OK)
-            }
-            Err(data) => {
-                let buf = Box::leak(data.to_string().into_bytes().into_boxed_slice());
-                (buf, &mut *errors, syscall::SYSCALL_ERR_NORMAL)
-            }
-        };
-
-        target.ptr = buf.as_ptr() as ExternDataRef;
-        target.len = buf.len() as ExternDataRef;
-        status_code
-    }
-
-    fn __ipwis_main(inputs: ObjectData) -> ::ipis::core::anyhow::Result<ObjectData> {
-        ::ipis::futures::executor::block_on(__ipwis_main_async(inputs))
-    }
-
-    async fn __ipwis_main_async(inputs: ObjectData) -> ::ipis::core::anyhow::Result<ObjectData> {
-        println!("{:?}", inputs);
-
-        // no-stream module (small)
-        let instant = ::std::time::Instant::now();
-        {
-            let mut src = "hello world!".as_bytes();
-
-            let mut dst = Vec::new();
-            ::ipis::tokio::io::copy(&mut src, &mut dst).await?;
-
-            println!("{}", String::from_utf8(dst)?);
-        }
-        println!("stream module (small) = {:?}", instant.elapsed());
-
-        // no-stream module (large)
-        let instant = ::std::time::Instant::now();
-        {
-            let src = vec![42u8; 1_000_000_000];
-
-            let mut dst = Vec::new();
-            ::ipis::tokio::io::copy(&mut src.as_slice(), &mut dst).await?;
-
-            assert_eq!(src.len(), dst.len());
-        }
-        println!("stream module (large) = {:?}", instant.elapsed());
-
-        // stream module (small)
-        let instant = ::std::time::Instant::now();
-        {
-            let src = "hello world!".as_bytes();
-            let mut reader = ExternReader::try_from(src)?;
-
-            let mut dst = Vec::new();
-            ::ipis::tokio::io::copy(&mut reader, &mut dst).await?;
-
-            println!("{}", String::from_utf8(dst)?);
-        }
-        println!("stream module (small) = {:?}", instant.elapsed());
-
-        // stream module (large)
-        let instant = ::std::time::Instant::now();
-        {
-            let src = vec![42u8; 1_000_000_000];
-            let mut reader = ExternReader::try_from(src.as_slice())?;
-
-            let mut dst = Vec::new();
-            ::ipis::tokio::io::copy(&mut reader, &mut dst).await?;
-
-            assert_eq!(src.len(), dst.len());
-        }
-        println!("stream module (large) = {:?}", instant.elapsed());
-
-        Ok(inputs)
-    }
+    Ok(inputs)
 }
