@@ -6,9 +6,9 @@ use std::{
 
 use ipis::{
     core::anyhow::{anyhow, bail, Result},
+    resource::Resource,
     tokio::sync::Mutex,
 };
-use ipwis_modules_core_common::resource::Resource;
 
 #[derive(Default)]
 pub struct ResourceRoot {
@@ -18,7 +18,7 @@ pub struct ResourceRoot {
 impl ResourceRoot {
     pub async fn get<T>(&self) -> Result<Arc<T>>
     where
-        T: Resource + Send + Sync + 'static,
+        T: Resource + 'static,
     {
         self.map
             .lock()
@@ -31,7 +31,7 @@ impl ResourceRoot {
 
     pub async fn put<T>(&self, value: T) -> Result<()>
     where
-        T: Resource + Send + Sync + 'static,
+        T: Resource + 'static,
     {
         match self.map.lock().await.entry(TypeId::of::<T>()) {
             Entry::Vacant(e) => {

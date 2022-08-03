@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
-use ipis::{async_trait::async_trait, core::anyhow::Result, tokio::sync::Mutex};
-use ipwis_modules_core_common::resource::Resource;
+use ipis::{
+    async_trait::async_trait, core::anyhow::Result, resource::Resource, tokio::sync::Mutex,
+};
 use ipwis_modules_task_api::task_state::TaskState;
 use wasmtime_wasi::{WasiCtx, WasiCtxBuilder};
 

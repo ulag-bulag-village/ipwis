@@ -151,7 +151,7 @@ pub mod syscall {
 
             async unsafe fn try_syscall<'a>(
                 caller: &mut Caller<'a, IpwisTaskCtx>,
-                memory: &mut IpwisMemory<&'static mut Caller<'static, IpwisTaskCtx>>,
+                memory: &mut IpwisMemory,
                 handler: ExternDataRef,
                 inputs: ExternDataRef,
             ) -> Result<AlignedVec> {

@@ -1,5 +1,5 @@
 [package]
-name = "ipwis-modules-task-api"
+name = "ipwis-modules-ipiis-common"
 version = "0.1.0"
 edition = "2021"
 
@@ -17,7 +17,12 @@ repository = "https://github.com/ulagbulag-village/ipwis"
 ipis = { git = "https://github.com/ulagbulag-village/ipis", features = [
     "derive",
 ] }
-ipwis-modules-task-common = { path = "../common" }
+ipwis-modules-core-common = { path = "../../core/common" }
+ipwis-modules-stream-common = { path = "../../stream/common" }
+ipwis-modules-task-common-wasi = { path = "../../task/common/wasi" }
 
 bytecheck = "0.6"
 rkyv = { version = "0.7", features = ["archive_be"] }
+
+[target.'cfg(target_os = "wasi")'.dependencies]
+ipiis-common = { git = "https://github.com/ulagbulag-village/ipiis" }

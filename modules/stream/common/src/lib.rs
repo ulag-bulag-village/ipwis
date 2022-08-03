@@ -5,6 +5,7 @@ use core::{
 };
 
 use bytecheck::CheckBytes;
+use ipis::core::signed::IsSigned;
 #[cfg(target_os = "wasi")]
 use ipis::{
     core::anyhow::Error,
@@ -20,16 +21,19 @@ use ipwis_modules_task_common_wasi::extern_data::{ExternData, ExternDataRef};
 use rkyv::{de::deserializers::SharedDeserializeMap, validation::validators::DefaultValidator};
 use rkyv::{Archive, Deserialize, Serialize};
 
+#[derive(Archive, Serialize, Deserialize)]
+#[archive_attr(derive(CheckBytes))]
 #[allow(dead_code)]
 pub struct ExternReader {
     id: ResourceId,
-    len: ExternDataRef,
 }
+
+impl IsSigned for ExternReader {}
 
 #[cfg(not(target_os = "wasi"))]
 impl ExternReader {
-    pub fn new(id: ResourceId, len: ExternDataRef) -> Self {
-        Self { id, len }
+    pub fn new(id: ResourceId) -> Self {
+        Self { id }
     }
 }
 
@@ -38,19 +42,16 @@ impl TryFrom<&'_ [u8]> for ExternReader {
     type Error = Error;
 
     fn try_from(buf: &'_ [u8]) -> Result<Self, Self::Error> {
-        let ptr = buf.as_ptr() as ExternDataRef;
-        let len = buf.len() as ExternDataRef;
-
-        Ok(Self {
-            id: unsafe {
-                io::request::ReaderNew {
-                    buf: ExternData { ptr, len },
-                }
-                .syscall()?
-                .id
-            },
-            len,
-        })
+        unsafe {
+            io::request::ReaderNew {
+                buf: ExternData {
+                    ptr: buf.as_ptr() as ExternDataRef,
+                    len: buf.len() as ExternDataRef,
+                },
+            }
+            .syscall()
+            .map_err(Into::into)
+        }
     }
 }
 
@@ -92,10 +93,14 @@ impl Drop for ExternReader {
     }
 }
 
+#[derive(Archive, Serialize, Deserialize)]
+#[archive_attr(derive(CheckBytes))]
 #[allow(dead_code)]
 pub struct ExternWriter {
     id: ResourceId,
 }
+
+impl IsSigned for ExternWriter {}
 
 #[cfg(not(target_os = "wasi"))]
 impl ExternWriter {
@@ -167,7 +172,7 @@ pub mod io {
         WriterRelease(self::request::WriterRelease),
     }
 
-    impl ::ipis::core::signed::IsSigned for OpCode {}
+    impl IsSigned for OpCode {}
 
     impl OpCode {
         pub const ID: InterruptId = InterruptId("ipwis_modules_stream");
@@ -194,7 +199,7 @@ pub mod io {
             pub buf: ExternData,
         }
 
-        impl ::ipis::core::signed::IsSigned for ReaderNew {}
+        impl IsSigned for ReaderNew {}
 
         #[cfg(target_os = "wasi")]
         impl ReaderNew {
@@ -212,7 +217,7 @@ pub mod io {
             pub buf: ExternData,
         }
 
-        impl ::ipis::core::signed::IsSigned for ReaderNext {}
+        impl IsSigned for ReaderNext {}
 
         #[cfg(target_os = "wasi")]
         impl ReaderNext {
@@ -229,7 +234,7 @@ pub mod io {
             pub id: ResourceId,
         }
 
-        impl ::ipis::core::signed::IsSigned for ReaderRelease {}
+        impl IsSigned for ReaderRelease {}
 
         #[cfg(target_os = "wasi")]
         impl ReaderRelease {
@@ -247,7 +252,7 @@ pub mod io {
             pub buf: ExternData,
         }
 
-        impl ::ipis::core::signed::IsSigned for WriterNext {}
+        impl IsSigned for WriterNext {}
 
         #[cfg(target_os = "wasi")]
         impl WriterNext {
@@ -264,7 +269,7 @@ pub mod io {
             pub id: ResourceId,
         }
 
-        impl ::ipis::core::signed::IsSigned for WriterFlush {}
+        impl IsSigned for WriterFlush {}
 
         #[cfg(target_os = "wasi")]
         impl WriterFlush {
@@ -281,7 +286,7 @@ pub mod io {
             pub id: ResourceId,
         }
 
-        impl ::ipis::core::signed::IsSigned for WriterShutdown {}
+        impl IsSigned for WriterShutdown {}
 
         #[cfg(target_os = "wasi")]
         impl WriterShutdown {
@@ -298,7 +303,7 @@ pub mod io {
             pub id: ResourceId,
         }
 
-        impl ::ipis::core::signed::IsSigned for WriterRelease {}
+        impl IsSigned for WriterRelease {}
 
         #[cfg(target_os = "wasi")]
         impl WriterRelease {
@@ -313,13 +318,7 @@ pub mod io {
     pub mod response {
         use super::*;
 
-        #[derive(Archive, Serialize, Deserialize)]
-        #[archive_attr(derive(CheckBytes))]
-        pub struct ReaderNew {
-            pub id: ResourceId,
-        }
-
-        impl ::ipis::core::signed::IsSigned for ReaderNew {}
+        pub type ReaderNew = ExternReader;
 
         #[derive(Archive, Serialize, Deserialize)]
         #[archive_attr(derive(CheckBytes))]
@@ -327,13 +326,9 @@ pub mod io {
             pub len: ExternDataRef,
         }
 
-        impl ::ipis::core::signed::IsSigned for ReaderNext {}
+        impl IsSigned for ReaderNext {}
 
-        #[derive(Archive, Serialize, Deserialize)]
-        #[archive_attr(derive(CheckBytes))]
-        pub struct ReaderRelease {}
-
-        impl ::ipis::core::signed::IsSigned for ReaderRelease {}
+        pub type ReaderRelease = ();
 
         #[derive(Archive, Serialize, Deserialize)]
         #[archive_attr(derive(CheckBytes))]
@@ -341,24 +336,12 @@ pub mod io {
             pub len: ExternDataRef,
         }
 
-        impl ::ipis::core::signed::IsSigned for WriterNext {}
+        impl IsSigned for WriterNext {}
 
-        #[derive(Archive, Serialize, Deserialize)]
-        #[archive_attr(derive(CheckBytes))]
-        pub struct WriterFlush {}
+        pub type WriterFlush = ();
 
-        impl ::ipis::core::signed::IsSigned for WriterFlush {}
+        pub type WriterShutdown = ();
 
-        #[derive(Archive, Serialize, Deserialize)]
-        #[archive_attr(derive(CheckBytes))]
-        pub struct WriterShutdown {}
-
-        impl ::ipis::core::signed::IsSigned for WriterShutdown {}
-
-        #[derive(Archive, Serialize, Deserialize)]
-        #[archive_attr(derive(CheckBytes))]
-        pub struct WriterRelease {}
-
-        impl ::ipis::core::signed::IsSigned for WriterRelease {}
+        pub type WriterRelease = ();
     }
 }

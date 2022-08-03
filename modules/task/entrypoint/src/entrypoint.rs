@@ -89,6 +89,8 @@ pub fn expand_attribute(input: syn::ItemFn) -> Result<TokenStream, Vec<syn::Erro
             }
 
             async fn __ipwis_main_async(inputs: ObjectData) -> ::ipis::core::anyhow::Result<ObjectData> {
+                use super::*;
+
                 #block
             }
         }

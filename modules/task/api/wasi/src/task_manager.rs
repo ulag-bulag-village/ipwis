@@ -9,9 +9,9 @@ use ipis::{
     },
     object::data::ObjectData,
     pin::PinnedInner,
+    resource::Resource,
     tokio::{self, sync::Mutex},
 };
-use ipwis_modules_core_common::resource::Resource;
 use ipwis_modules_task_api::{
     task_instance::TaskInstance, task_manager::TaskManager, task_state::TaskState,
 };
@@ -22,7 +22,7 @@ use wasmtime::{Config, Engine, Linker, Module, Store, Trap};
 use crate::{
     interrupt_manager::InterruptManager,
     intrinsics::syscall,
-    memory::{IpwisMemory, Memory},
+    memory::{IpwisMemoryInner, Memory},
     task_ctx::IpwisTaskCtx,
 };
 
@@ -67,7 +67,7 @@ impl TaskManager for IpwisTaskManager {
         let handler = {
             let state = state.clone();
             let (inputs, outputs, errors) = {
-                let mut memory = IpwisMemory::with_instance(&instance, &mut store)?;
+                let mut memory = IpwisMemoryInner::with_instance(&instance, &mut store)?;
                 let state = state.lock().await;
 
                 let inputs = memory
@@ -86,12 +86,12 @@ impl TaskManager for IpwisTaskManager {
                     )
                     .await;
 
-                let memory = IpwisMemory::with_instance(&instance, &mut store);
+                let memory = IpwisMemoryInner::with_instance(&instance, &mut store);
                 let mut state = state.lock().await;
                 state.is_working = false;
 
                 fn parse_status_code<T>(
-                    memory: Result<IpwisMemory<&'_ mut Store<T>>>,
+                    memory: Result<IpwisMemoryInner<&'_ mut Store<T>>>,
                     outputs: ExternData,
                     errors: ExternData,
                     result: Result<ExternDataRef, Trap>,

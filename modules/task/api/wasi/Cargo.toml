@@ -17,12 +17,11 @@ repository = "https://github.com/ulagbulag-village/ipwis"
 ipis = { git = "https://github.com/ulagbulag-village/ipis", features = [
     "derive",
 ] }
-ipwis-modules-core-common = { path = "../../../core/common" }
 ipwis-modules-task-api = { path = ".." }
 ipwis-modules-task-common = { path = "../../common" }
 ipwis-modules-task-common-wasi = { path = "../../common/wasi" }
 
 bytecheck = "0.6"
 rkyv = { version = "0.7", features = ["archive_be"] }
-wasmtime = { version = "0.38", features = ["cache"] }
-wasmtime-wasi = "0.38"
+wasmtime = { version = "0.39", features = ["cache"] }
+wasmtime-wasi = "0.39"

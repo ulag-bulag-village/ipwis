@@ -6,17 +6,25 @@ use ipis::{
         signed::{IsSigned, Serializer},
     },
 };
-use ipwis_modules_task_common_wasi::extern_data::{ExternData, ExternDataRef};
+use ipwis_modules_task_common_wasi::{
+    extern_data::{ExternData, ExternDataRef},
+    interrupt_id::InterruptId,
+};
 use rkyv::{
     de::deserializers::SharedDeserializeMap, validation::validators::DefaultValidator, Archive,
     Deserialize, Serialize,
 };
 use wasmtime::{AsContext, AsContextMut, Caller, Instance, Trap};
 
-use crate::intrinsics::memory::{self, IpwisAlloc, IpwisAllocZeroed, IpwisDealloc, IpwisRealloc};
+use crate::{
+    interrupt_handler_state::IpwisInterruptHandler,
+    intrinsics::memory::{self, IpwisAlloc, IpwisAllocZeroed, IpwisDealloc, IpwisRealloc},
+    task_ctx::IpwisTaskCtx,
+};
 
-// #[allow(dead_code)] // TODO: make more **safe** functions to get rid of it
-pub struct IpwisMemory<S> {
+pub type IpwisMemory = IpwisMemoryInner<&'static mut Caller<'static, IpwisTaskCtx>>;
+
+pub struct IpwisMemoryInner<S> {
     pub store: S,
     memory: ::wasmtime::Memory,
     alloc: IpwisAlloc,
@@ -25,7 +33,7 @@ pub struct IpwisMemory<S> {
     realloc: IpwisRealloc,
 }
 
-impl<'a, 'c, T> IpwisMemory<&'c mut Caller<'a, T>> {
+impl<'a, 'c, T> IpwisMemoryInner<&'c mut Caller<'a, T>> {
     pub fn with_caller(caller: &'c mut Caller<'a, T>) -> Result<Self> {
         Ok(Self {
             memory: memory::caller::__builtin_memory(caller)?,
@@ -38,7 +46,7 @@ impl<'a, 'c, T> IpwisMemory<&'c mut Caller<'a, T>> {
     }
 }
 
-impl<S> IpwisMemory<S>
+impl<S> IpwisMemoryInner<S>
 where
     S: AsContextMut,
 {
@@ -55,7 +63,7 @@ where
 }
 
 #[async_trait]
-impl<S> Memory for IpwisMemory<S>
+impl<S> Memory for IpwisMemoryInner<S>
 where
     S: AsContextMut + Send + Sync,
     S::Data: Send,
@@ -96,7 +104,7 @@ where
 }
 
 #[allow(dead_code)] // TODO: make more **safe** functions to get rid of it
-impl<S, T> IpwisMemory<S>
+impl<S, T> IpwisMemoryInner<S>
 where
     S: AsContextMut<Data = T>,
     T: Send,
@@ -155,7 +163,20 @@ where
     }
 }
 
-impl<S> IpwisMemory<S>
+impl IpwisMemory {
+    pub async fn get_interrupt_handler(
+        &mut self,
+        handler: InterruptId,
+    ) -> Result<IpwisInterruptHandler> {
+        self.store
+            .data_mut()
+            .interrupt_handler_state
+            .get(handler)
+            .await
+    }
+}
+
+impl<S> IpwisMemoryInner<S>
 where
     S: AsContext,
 {

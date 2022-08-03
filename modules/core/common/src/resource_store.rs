@@ -4,10 +4,9 @@ use bytecheck::CheckBytes;
 use ipis::{
     async_trait::async_trait,
     core::anyhow::{anyhow, Result},
+    resource::Resource,
 };
 use rkyv::{Archive, Deserialize, Serialize};
-
-use crate::resource::Resource;
 
 pub struct ResourceStore<R> {
     map: HashMap<ResourceId, R>,

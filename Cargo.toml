@@ -3,6 +3,8 @@ resolver = "2"
 members = [
     "modules/core/api",
     "modules/core/common",
+    "modules/ipiis/api",
+    "modules/ipiis/common",
     "modules/stream/api",
     "modules/stream/common",
     "modules/task/api",

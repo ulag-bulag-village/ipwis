@@ -25,12 +25,21 @@ crate-type = ["cdylib", "rlib"]
 ipis = { git = "https://github.com/ulagbulag-village/ipis", features = [
     "derive",
 ] }
+
+bytecheck = "0.6"
+rkyv = { version = "0.7", features = ["archive_be"] }
+
+[target.'cfg(target_os = "wasi")'.dependencies]
+ipsis-common = { git = "https://github.com/ulagbulag-village/ipsis" }
+ipwis-modules-ipiis-common = { path = "../../ipiis/common" }
 ipwis-modules-stream-common = { path = "../../stream/common" }
 ipwis-modules-task-common-wasi = { path = "../common/wasi" }
 ipwis-modules-task-entrypoint = { path = "../entrypoint" }
 
 [target.'cfg(not(target_os = "wasi"))'.dependencies]
 ipiis-api = { git = "https://github.com/ulagbulag-village/ipiis" }
+ipsis-api = { git = "https://github.com/ulagbulag-village/ipsis" }
+ipwis-modules-ipiis-api = { path = "../../ipiis/api" }
 ipwis-modules-stream-api = { path = "../../stream/api" }
 ipwis-modules-task-api = { path = "../api" }
 ipwis-modules-task-api-wasi = { path = "../api/wasi" }
