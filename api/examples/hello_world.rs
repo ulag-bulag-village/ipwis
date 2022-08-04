@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
     let id = ipiis.sign_as_guarantor(id)?;
 
     // wait the task
-    let outputs = ipwis.task_poll(id).await?;
+    let outputs = ipwis.task_wait(id).await?;
     println!("{:?}", outputs);
 
     Ok(())
