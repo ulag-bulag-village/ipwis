@@ -3,7 +3,12 @@ use bytecheck::CheckBytes;
 use ipiis_common::Ipiis;
 use ipis::core::{account::AccountRef, signed::IsSigned, value::hash::Hash};
 #[cfg(target_os = "wasi")]
-use ipis::{async_trait::async_trait, core::anyhow::Result, env::Infer, log::warn};
+use ipis::{
+    async_trait::async_trait,
+    core::{account::Account, anyhow::{bail, Result}},
+    env::Infer,
+    log::warn,
+};
 use ipwis_modules_core_common::resource_store::ResourceId;
 pub use ipwis_modules_stream_common::{ExternReader, ExternWriter};
 #[cfg(target_os = "wasi")]
@@ -15,14 +20,15 @@ use rkyv::{Archive, Deserialize, Serialize};
 #[allow(dead_code)]
 pub struct IpiisClient {
     id: ResourceId,
+    account: AccountRef,
 }
 
 impl IsSigned for IpiisClient {}
 
 #[cfg(not(target_os = "wasi"))]
 impl IpiisClient {
-    pub fn new(id: ResourceId) -> Self {
-        Self { id }
+    pub fn new(id: ResourceId, account: AccountRef,) -> Self {
+        Self { id, account }
     }
 }
 
@@ -53,8 +59,12 @@ impl Ipiis for IpiisClient {
     type Reader = ExternReader;
     type Writer = ExternWriter;
 
-    fn account_me(&self) -> &Account {
-        panic!("Direct accessing to Account is not supported in IPWIS.")
+    unsafe fn account_me(&self) -> Result<&Account> {
+        bail!("Direct accessing to Account is not supported in IPWIS.")
+    }
+
+    fn account_ref(&self) -> &AccountRef {
+        &self.account
     }
 
     async fn get_account_primary(&self, kind: Option<&Hash>) -> Result<AccountRef> {

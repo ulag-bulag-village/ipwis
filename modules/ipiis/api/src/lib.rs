@@ -99,9 +99,10 @@ impl IpiisHandler {
         io::request::Infer {}: io::request::Infer,
     ) -> Result<io::response::Infer> {
         let instance = ::ipiis_api::client::IpiisClient::try_infer().await?;
+        let account = *instance.account_ref();
         let id = self.map.put(instance);
 
-        Ok(io::response::Infer::new(id))
+        Ok(io::response::Infer::new(id, account))
     }
 
     async unsafe fn handle_genesis(
@@ -109,9 +110,10 @@ impl IpiisHandler {
         req: io::request::Genesis,
     ) -> Result<io::response::Genesis> {
         let instance = ::ipiis_api::client::IpiisClient::genesis(req.args).await?;
+        let account = *instance.account_ref();
         let id = self.map.put(instance);
 
-        Ok(io::response::Infer::new(id))
+        Ok(io::response::Infer::new(id, account))
     }
 
     async unsafe fn handle_get_account_primary(

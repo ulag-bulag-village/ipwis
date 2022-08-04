@@ -1,12 +1,13 @@
 #![cfg(target_os = "wasi")]
 
 use bytecheck::CheckBytes;
+use ipiis_common::Ipiis;
 use ipis::{
     class::Class,
     core::{anyhow::bail, signed::IsSigned},
     env::Infer,
 };
-use ipsis_common::Ipsis;
+use ipsis_common::{Ipsis, KIND};
 use ipwis_modules_ipiis_common::IpiisClient;
 use rkyv::{Archive, Deserialize, Serialize};
 
@@ -76,8 +77,19 @@ pub async fn main(inputs: ObjectData) -> Result<ObjectData> {
         }
 
         impl IsSigned for MyData {}
+
         // create a client
         let client = IpiisClient::try_infer().await?;
+        client
+            .set_account_primary(KIND.as_ref(), client.account_ref())
+            .await?;
+        client
+            .set_address(
+                KIND.as_ref(),
+                client.account_ref(),
+                &"127.0.0.1:5001".parse()?,
+            )
+            .await?;
 
         // let's make a data we want to store
         let mut data = MyData {

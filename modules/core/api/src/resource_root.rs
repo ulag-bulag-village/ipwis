@@ -18,7 +18,7 @@ pub struct ResourceRoot {
 impl ResourceRoot {
     pub async fn get<T>(&self) -> Result<Arc<T>>
     where
-        T: Resource + 'static,
+        T: Resource + Send + Sync + 'static,
     {
         self.map
             .lock()
@@ -31,7 +31,7 @@ impl ResourceRoot {
 
     pub async fn put<T>(&self, value: T) -> Result<()>
     where
-        T: Resource + 'static,
+        T: Resource + Send + Sync + 'static,
     {
         match self.map.lock().await.entry(TypeId::of::<T>()) {
             Entry::Vacant(e) => {

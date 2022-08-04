@@ -30,6 +30,7 @@ bytecheck = "0.6"
 rkyv = { version = "0.7", features = ["archive_be"] }
 
 [target.'cfg(target_os = "wasi")'.dependencies]
+ipiis-common = { git = "https://github.com/ulagbulag-village/ipiis" }
 ipsis-common = { git = "https://github.com/ulagbulag-village/ipsis" }
 ipwis-modules-ipiis-common = { path = "../../ipiis/common" }
 ipwis-modules-stream-common = { path = "../../stream/common" }
