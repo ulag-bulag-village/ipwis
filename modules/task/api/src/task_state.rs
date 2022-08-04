@@ -13,5 +13,4 @@ where
     pub manager: Arc<T>,
     pub task: Data<GuarantorSigned, Task>,
     pub created_date: DateTime,
-    pub is_working: bool,
 }

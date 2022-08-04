@@ -1,11 +1,7 @@
 use std::sync::Arc;
 
 use ipiis_api::{client::IpiisClient, common::Ipiis};
-use ipis::{
-    core::anyhow::{bail, Result},
-    env::Infer,
-    tokio,
-};
+use ipis::{core::anyhow::Result, env::Infer, tokio};
 use ipsis_api::server::IpsisServer;
 use ipwis_modules_task_api::task_manager::TaskManager;
 use ipwis_modules_task_api_wasi::task_manager::IpwisTaskManager;
@@ -45,11 +41,7 @@ async fn main() -> Result<()> {
     let instance = manager.spawn_raw(task, BINARY).await?;
 
     // wait for result
-    match instance.await? {
-        Ok(outputs) => {
-            println!("{:?}", outputs);
-            Ok(())
-        }
-        Err(errors) => bail!("{}", errors.msg),
-    }
+    let outputs = instance.await?;
+    println!("{:?}", outputs);
+    Ok(())
 }

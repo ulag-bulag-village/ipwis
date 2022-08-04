@@ -5,8 +5,8 @@ use ipis::{
     core::{
         account::GuarantorSigned,
         anyhow::{bail, Result},
-        value::{chrono::DateTime, text::Text},
         data::Data,
+        value::{chrono::DateTime, text::Text},
     },
     object::data::ObjectData,
     pin::PinnedInner,
@@ -41,13 +41,12 @@ impl TaskManager for IpwisTaskManager {
         self: &Arc<Self>,
         task: Data<GuarantorSigned, Task>,
         program: &<Self as TaskManager>::Program,
-    ) -> Result<TaskInstance<Result<Box<ObjectData>, Text>, Self>> {
+    ) -> Result<TaskInstance<Box<ObjectData>, Self>> {
         // create a new state
         let state = Arc::new(Mutex::new(TaskState {
             manager: self.clone(),
             task,
             created_date: DateTime::now(),
-            is_working: true,
         }));
 
         // create a new store
@@ -66,7 +65,6 @@ impl TaskManager for IpwisTaskManager {
         // external call
         // note: the inner schedule is controlled by `wasmtime` engine, not by this scheduler
         let handler = {
-            let state = state.clone();
             let (inputs, outputs, errors) = {
                 let mut memory = IpwisMemoryInner::with_instance(&instance, &mut store)?;
                 let state = state.lock().await;
@@ -88,8 +86,6 @@ impl TaskManager for IpwisTaskManager {
                     .await;
 
                 let memory = IpwisMemoryInner::with_instance(&instance, &mut store);
-                let mut state = state.lock().await;
-                state.is_working = false;
 
                 fn parse_status_code<T>(
                     memory: Result<IpwisMemoryInner<&'_ mut Store<T>>>,

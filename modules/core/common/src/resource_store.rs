@@ -41,6 +41,12 @@ impl<R> ResourceStore<R> {
         id
     }
 
+    pub fn remove(&mut self, id: &ResourceId) -> Result<R> {
+        self.map
+            .remove(id)
+            .ok_or_else(|| anyhow!("failed to find a resource: {id:x}"))
+    }
+
     pub async fn release_one(&mut self, id: &ResourceId) -> Result<()>
     where
         R: Resource + Send,

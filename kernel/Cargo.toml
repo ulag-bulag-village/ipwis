@@ -1,0 +1,27 @@
+[package]
+name = "ipwis-kernel"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["Ho Kim <ho.kim@ulagbulag.io>"]
+description = "InterPlanetary WASI Interpretation Service"
+documentation = "https://docs.rs/ipwis"
+license = "MIT OR Apache-2.0"
+readme = "../../../README.md"
+homepage = "https://ulagbulag.io/"
+repository = "https://github.com/ulagbulag-village/ipwis"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ipis = { git = "https://github.com/ulagbulag-village/ipis", features = [
+    "derive",
+] }
+ipwis-modules-core-common = { path = "../modules/core/common" }
+ipwis-modules-task-api = { path = "../modules/task/api" }
+ipwis-modules-task-api-wasi = { path = "../modules/task/api/wasi" }
+ipwis-modules-task-common = { path = "../modules/task/common" }
+
+# Submodules
+ipwis-modules-ipiis-api = { path = "../modules/ipiis/api" }
+ipwis-modules-stream-api = { path = "../modules/stream/api" }
