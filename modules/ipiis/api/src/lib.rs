@@ -1,4 +1,5 @@
 #![allow(clippy::missing_safety_doc)]
+#![allow(incomplete_features)]
 #![feature(trait_upcasting)]
 
 use ipiis_api::common::Ipiis;
