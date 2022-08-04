@@ -1,11 +1,21 @@
 use bytecheck::CheckBytes;
 #[cfg(target_os = "wasi")]
 use ipiis_common::Ipiis;
-use ipis::core::{account::AccountRef, signed::IsSigned, value::hash::Hash};
+use ipis::core::{
+    account::{AccountRef, GuaranteeSigned, GuarantorSigned},
+    metadata::Metadata,
+    signed::IsSigned,
+    value::hash::Hash,
+};
 #[cfg(target_os = "wasi")]
 use ipis::{
     async_trait::async_trait,
-    core::{account::Account, anyhow::{bail, Result}},
+    core::{
+        account::Account,
+        anyhow::{bail, Result},
+        data::Data,
+        signature::SignatureSerializer,
+    },
     env::Infer,
     log::warn,
 };
@@ -27,7 +37,7 @@ impl IsSigned for IpiisClient {}
 
 #[cfg(not(target_os = "wasi"))]
 impl IpiisClient {
-    pub fn new(id: ResourceId, account: AccountRef,) -> Self {
+    pub fn new(id: ResourceId, account: AccountRef) -> Self {
         Self { id, account }
     }
 }
@@ -120,6 +130,53 @@ impl Ipiis for IpiisClient {
         }
     }
 
+    fn sign<'a, T>(&self, target: AccountRef, msg: &'a T) -> Result<Data<GuaranteeSigned, &'a T>>
+    where
+        T: Archive + Serialize<SignatureSerializer> + IsSigned,
+        <T as Archive>::Archived: ::core::fmt::Debug + PartialEq,
+    {
+        Ok(Data {
+            metadata: unsafe {
+                io::request::SignAsGuarantee {
+                    id: self.id,
+                    metadata: Metadata::builder().build_unsigned(target, msg)?,
+                }
+                .syscall()
+            }?,
+            data: msg,
+        })
+    }
+
+    fn sign_owned<T>(&self, target: AccountRef, msg: T) -> Result<Data<GuaranteeSigned, T>>
+    where
+        T: Archive + Serialize<SignatureSerializer> + IsSigned,
+        <T as Archive>::Archived: ::core::fmt::Debug + PartialEq,
+    {
+        Ok(Data {
+            metadata: self.sign(target, &msg)?.metadata,
+            data: msg,
+        })
+    }
+
+    fn sign_as_guarantor<T>(
+        &self,
+        msg: Data<GuaranteeSigned, T>,
+    ) -> Result<Data<GuarantorSigned, T>>
+    where
+        T: IsSigned,
+    {
+        Ok(Data {
+            metadata: unsafe {
+                io::request::SignAsGuarantor {
+                    id: self.id,
+                    metadata: msg.metadata,
+                }
+                .syscall()
+            }?,
+            data: msg.data,
+        })
+    }
+
     async fn call_raw(
         &self,
         kind: Option<&Hash>,
@@ -131,8 +188,8 @@ impl Ipiis for IpiisClient {
                 kind: kind.cloned(),
                 target: *target,
             }
-            .syscall()?
-        };
+            .syscall()
+        }?;
 
         Ok((writer, reader))
     }
@@ -164,6 +221,8 @@ pub mod io {
         GetAddress(self::request::GetAddress),
         SetAddress(self::request::SetAddress),
         CallRaw(self::request::CallRaw),
+        SignAsGuarantee(Box<self::request::SignAsGuarantee>),
+        SignAsGuarantor(Box<self::request::SignAsGuarantor>),
         Release(self::request::Release),
     }
 
@@ -284,6 +343,38 @@ pub mod io {
 
         #[derive(Archive, Serialize, Deserialize)]
         #[archive_attr(derive(CheckBytes))]
+        pub struct SignAsGuarantee {
+            pub id: ResourceId,
+            pub metadata: Metadata,
+        }
+
+        impl IsSigned for SignAsGuarantee {}
+
+        #[cfg(target_os = "wasi")]
+        impl SignAsGuarantee {
+            pub(crate) unsafe fn syscall(self) -> Result<super::response::SignAsGuarantee> {
+                super::OpCode::SignAsGuarantee(Box::new(self)).syscall()
+            }
+        }
+
+        #[derive(Archive, Serialize, Deserialize)]
+        #[archive_attr(derive(CheckBytes))]
+        pub struct SignAsGuarantor {
+            pub id: ResourceId,
+            pub metadata: GuaranteeSigned,
+        }
+
+        impl IsSigned for SignAsGuarantor {}
+
+        #[cfg(target_os = "wasi")]
+        impl SignAsGuarantor {
+            pub(crate) unsafe fn syscall(self) -> Result<super::response::SignAsGuarantor> {
+                super::OpCode::SignAsGuarantor(Box::new(self)).syscall()
+            }
+        }
+
+        #[derive(Archive, Serialize, Deserialize)]
+        #[archive_attr(derive(CheckBytes))]
         pub struct CallRaw {
             pub id: ResourceId,
             pub kind: Option<Hash>,
@@ -329,6 +420,10 @@ pub mod io {
         pub type GetAddress = ExternAddress;
 
         pub type SetAddress = ();
+
+        pub type SignAsGuarantee = GuaranteeSigned;
+
+        pub type SignAsGuarantor = GuarantorSigned;
 
         #[derive(Archive, Serialize, Deserialize)]
         #[archive_attr(derive(CheckBytes))]

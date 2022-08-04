@@ -27,7 +27,7 @@ ipis = { git = "https://github.com/ulagbulag-village/ipis", features = [
 ] }
 
 bytecheck = "0.6"
-rkyv = { version = "0.7", features = ["archive_be"] }
+rkyv = { version = "0.7", features = ["archive_le"] }
 
 [target.'cfg(target_os = "wasi")'.dependencies]
 ipiis-common = { git = "https://github.com/ulagbulag-village/ipiis" }

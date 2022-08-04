@@ -24,6 +24,3 @@ ipwis-modules-stream-api = { path = "../../stream/api" }
 ipwis-modules-stream-common = { path = "../../stream/common" }
 ipwis-modules-task-api-wasi = { path = "../../task/api/wasi" }
 ipwis-modules-task-common-wasi = { path = "../../task/common/wasi" }
-
-bytecheck = "0.6"
-rkyv = { version = "0.7", features = ["archive_be"] }

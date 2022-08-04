@@ -6,6 +6,7 @@ use ipis::{
         account::GuarantorSigned,
         anyhow::{bail, Result},
         value::{chrono::DateTime, text::Text},
+        data::Data,
     },
     object::data::ObjectData,
     pin::PinnedInner,
@@ -38,7 +39,7 @@ impl TaskManager for IpwisTaskManager {
 
     async fn spawn_raw(
         self: &Arc<Self>,
-        task: GuarantorSigned<Task>,
+        task: Data<GuarantorSigned, Task>,
         program: &<Self as TaskManager>::Program,
     ) -> Result<TaskInstance<Result<Box<ObjectData>, Text>, Self>> {
         // create a new state

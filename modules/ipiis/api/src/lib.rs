@@ -1,9 +1,10 @@
 #![allow(clippy::missing_safety_doc)]
+#![feature(trait_upcasting)]
 
 use ipiis_api::common::Ipiis;
 use ipis::{
     async_trait::async_trait,
-    core::{anyhow::Result, signed::IsSigned},
+    core::{account::Signer, anyhow::Result, signed::IsSigned},
     env::Infer,
     pin::PinnedInner,
     resource::Resource,
@@ -68,6 +69,16 @@ impl InterruptHandler for IpiisHandler {
                 .map_err(Into::into),
             io::OpCode::SetAddress(req) => self
                 .handle_set_address(req)
+                .await?
+                .to_bytes()
+                .map_err(Into::into),
+            io::OpCode::SignAsGuarantee(req) => self
+                .handle_sign_as_guarantee(*req)
+                .await?
+                .to_bytes()
+                .map_err(Into::into),
+            io::OpCode::SignAsGuarantor(req) => self
+                .handle_sign_as_guarantor(*req)
                 .await?
                 .to_bytes()
                 .map_err(Into::into),
@@ -156,6 +167,22 @@ impl IpiisHandler {
             .await
     }
 
+    async unsafe fn handle_sign_as_guarantee(
+        &mut self,
+        req: io::request::SignAsGuarantee,
+    ) -> Result<io::response::SignAsGuarantee> {
+        let ipiis = self.map.get(&req.id)?;
+        io::response::SignAsGuarantee::sign(ipiis.account_me()?, req.metadata)
+    }
+
+    async unsafe fn handle_sign_as_guarantor(
+        &mut self,
+        req: io::request::SignAsGuarantor,
+    ) -> Result<io::response::SignAsGuarantor> {
+        let ipiis = self.map.get(&req.id)?;
+        io::response::SignAsGuarantor::sign(ipiis.account_me()?, req.metadata)
+    }
+
     async unsafe fn handle_call_raw(
         &mut self,
         memory: &mut IpwisMemory,
@@ -172,7 +199,9 @@ impl IpiisHandler {
         // load stream handler
         let stream = memory.get_interrupt_handler(StreamModule.id()).await?;
         let mut stream = stream.lock().await;
-        let stream: &mut StreamHandler = (&mut *stream as &mut dyn Any).downcast_mut().unwrap();
+        #[allow(clippy::explicit_auto_deref)]
+        let stream: &mut dyn InterruptHandler<IpwisMemory> = &mut **stream;
+        let stream: &mut StreamHandler = (stream as &mut dyn Any).downcast_mut().unwrap();
 
         Ok(io::response::CallRaw {
             writer: stream.new_writer(writer)?,

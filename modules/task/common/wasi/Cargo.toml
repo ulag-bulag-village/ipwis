@@ -20,4 +20,4 @@ ipis = { git = "https://github.com/ulagbulag-village/ipis", features = [
 ipwis-modules-task-common = { path = ".." }
 
 bytecheck = "0.6"
-rkyv = { version = "0.7", features = ["archive_be"] }
+rkyv = { version = "0.7", features = ["archive_le"] }

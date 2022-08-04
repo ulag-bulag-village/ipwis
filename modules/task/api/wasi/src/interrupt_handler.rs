@@ -1,7 +1,6 @@
 use std::any::Any;
 
-use ipis::{async_trait::async_trait, core::anyhow::Result, resource::Resource};
-use rkyv::AlignedVec;
+use ipis::{async_trait::async_trait, core::anyhow::Result, resource::Resource, rkyv::AlignedVec};
 
 use crate::memory::{IpwisMemory, Memory};
 

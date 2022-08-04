@@ -116,9 +116,8 @@ pub mod syscall {
     }
 
     mod impls {
-        use ipis::log::warn;
+        use ipis::{log::warn, rkyv::AlignedVec};
         use ipwis_modules_task_common_wasi::interrupt_id::InterruptId;
-        use rkyv::AlignedVec;
 
         use crate::{
             memory::{IpwisMemory, Memory},

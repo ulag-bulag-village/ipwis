@@ -4,10 +4,10 @@ use std::{
 };
 
 use ipis::{
-    async_trait::async_trait, core::anyhow::Result, resource::Resource, tokio::sync::Mutex,
+    async_trait::async_trait, core::anyhow::Result, resource::Resource, rkyv::AlignedVec,
+    tokio::sync::Mutex,
 };
 use ipwis_modules_task_common_wasi::interrupt_id::InterruptId;
-use rkyv::AlignedVec;
 
 use crate::{
     interrupt_handler::InterruptHandler, memory::IpwisMemory, task_manager::IpwisTaskManager,

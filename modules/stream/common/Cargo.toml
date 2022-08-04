@@ -21,4 +21,4 @@ ipwis-modules-core-common = { path = "../../core/common" }
 ipwis-modules-task-common-wasi = { path = "../../task/common/wasi" }
 
 bytecheck = "0.6"
-rkyv = { version = "0.7", features = ["archive_be"] }
+rkyv = { version = "0.7", features = ["archive_le"] }

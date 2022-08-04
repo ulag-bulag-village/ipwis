@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
 
     // create a task and sign
     let task = Task::new_sandbox();
-    let task = client.sign(*client.account_ref(), task)?;
+    let task = client.sign_owned(*client.account_ref(), task)?;
     let task = client.sign_as_guarantor(task)?;
 
     // spawn a task

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bytecheck::CheckBytes;
 use ipis::{
-    core::{account::GuaranteeSigned, signed::IsSigned},
+    core::{account::GuaranteeSigned, signed::IsSigned, data::Data},
     path::Path,
 };
 use rkyv::{Archive, Deserialize, Serialize};
@@ -16,7 +16,7 @@ use crate::task_constraints::TaskConstraints;
 #[archive_attr(derive(Debug, PartialEq))]
 pub struct Task {
     pub constraints: TaskConstraints,
-    pub program: Option<GuaranteeSigned<Path>>,
+    pub program: Option<Data<GuaranteeSigned, Path>>,
     #[omit_bounds]
     pub reserved: HashMap<String, Self>,
     #[omit_bounds]

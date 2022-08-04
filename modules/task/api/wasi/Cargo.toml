@@ -21,7 +21,5 @@ ipwis-modules-task-api = { path = ".." }
 ipwis-modules-task-common = { path = "../../common" }
 ipwis-modules-task-common-wasi = { path = "../../common/wasi" }
 
-bytecheck = "0.6"
-rkyv = { version = "0.7", features = ["archive_be"] }
 wasmtime = { version = "0.39", features = ["cache"] }
 wasmtime-wasi = "0.39"

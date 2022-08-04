@@ -22,7 +22,7 @@ ipwis-modules-stream-common = { path = "../../stream/common" }
 ipwis-modules-task-common-wasi = { path = "../../task/common/wasi" }
 
 bytecheck = "0.6"
-rkyv = { version = "0.7", features = ["archive_be"] }
+rkyv = { version = "0.7", features = ["archive_le"] }
 
 [target.'cfg(target_os = "wasi")'.dependencies]
 ipiis-common = { git = "https://github.com/ulagbulag-village/ipiis" }
