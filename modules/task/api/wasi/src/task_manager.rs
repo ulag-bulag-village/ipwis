@@ -17,7 +17,10 @@ use ipwis_modules_task_api::{
     task_instance::TaskInstance, task_manager::TaskManager, task_state::TaskState,
 };
 use ipwis_modules_task_common::task::Task;
-use ipwis_modules_task_common_wasi::extern_data::{ExternData, ExternDataRef};
+use ipwis_modules_task_common_wasi::{
+    extern_data::{ExternData, ExternDataRef},
+    program::Program,
+};
 use wasmtime::{Config, Engine, Linker, Module, Store, Trap};
 
 use crate::{
@@ -35,7 +38,7 @@ pub struct IpwisTaskManager {
 #[async_trait]
 impl TaskManager for IpwisTaskManager {
     type ExternData = ExternData;
-    type Program = [u8];
+    type Program = Program;
 
     async fn spawn_raw(
         self: &Arc<Self>,

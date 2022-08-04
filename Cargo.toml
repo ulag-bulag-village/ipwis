@@ -1,6 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
+    "api",
+    "common",
     "kernel",
     "modules/core/api",
     "modules/core/common",
@@ -15,5 +17,7 @@ members = [
     "modules/task/common/wasi",
     "modules/task/demo",
     "modules/task/entrypoint",
+    "pallet",
+    "runtime",
 ]
-# default-members = ["runtime"]
+default-members = ["runtime"]

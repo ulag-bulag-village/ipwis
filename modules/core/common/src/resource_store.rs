@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use bytecheck::CheckBytes;
 use ipis::{
     async_trait::async_trait,
-    core::anyhow::{anyhow, Result},
+    core::{
+        anyhow::{anyhow, Result},
+        signed::IsSigned,
+    },
     resource::Resource,
 };
 use rkyv::{Archive, Deserialize, Serialize};
@@ -77,8 +80,10 @@ where
 #[derive(
     Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Archive, Serialize, Deserialize,
 )]
-#[archive_attr(derive(CheckBytes, Copy, Clone, Debug))]
+#[archive_attr(derive(CheckBytes, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash))]
 pub struct ResourceId(u64);
+
+impl IsSigned for ResourceId {}
 
 impl ::core::fmt::LowerHex for ResourceId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
