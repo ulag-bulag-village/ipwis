@@ -7,7 +7,6 @@ use ipis::{
     core::account::Account,
     env::{self, Infer},
     futures,
-    log::info,
     stream::DynStream,
 };
 use rand::{distributions::Uniform, Rng};
