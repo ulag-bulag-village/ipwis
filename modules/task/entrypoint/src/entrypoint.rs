@@ -49,7 +49,6 @@ pub fn expand_attribute(input: syn::ItemFn) -> Result<TokenStream, Vec<syn::Erro
         #[cfg(target_os = "wasi")]
         mod syscall {
             use ipis::{core::signed::IsSigned, object::data::ObjectData, pin::PinnedInner};
-            use ipwis_modules_stream_common::ExternReader;
             use ipwis_modules_task_common_wasi::{
                 extern_data::{ExternData, ExternDataRef},
                 extrinsics::syscall,
@@ -92,6 +91,31 @@ pub fn expand_attribute(input: syn::ItemFn) -> Result<TokenStream, Vec<syn::Erro
                 use super::*;
 
                 #block
+            }
+        }
+
+        #[cfg(not(target_os = "wasi"))]
+        // TODO: use tokio::Runtime instead
+        use ipis::tokio;
+
+        #[cfg(not(target_os = "wasi"))]
+        async fn __ipwis_main_async(inputs: ::ipis::object::data::ObjectData)
+            -> ::ipis::core::anyhow::Result<::ipis::object::data::ObjectData>
+        {
+            #block
+        }
+
+        #[cfg(not(target_os = "wasi"))]
+        #[tokio::main]
+        pub async fn main() {
+            use ipis::object::IntoObjectData;
+
+            // infer test inputs
+            let mut inputs = ().__into_object_data();
+
+            match __ipwis_main_async(inputs).await {
+                Ok(_outputs) => {},
+                Err(errors) => ::ipis::log::error!("{}", errors),
             }
         }
     })

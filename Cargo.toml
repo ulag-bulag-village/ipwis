@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "api",
     "common",
+    "examples/ipiis/bench",
     "kernel",
     "modules/core/api",
     "modules/core/common",
