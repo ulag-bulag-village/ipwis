@@ -58,14 +58,16 @@ pub async fn main(inputs: ObjectData) -> Result<ObjectData> {
 
     // begin benchmaring
     println!("- Benchmarking...");
+    let mut duration = Duration::default();
+    for _ in 0..iter {
     let instant = Instant::now();
-    {
         futures::future::try_join_all(
             (0..num_threads).map(|_| client.ping(DynStream::ArcVec(data.clone()))),
         )
         .await?;
+        duration += instant.elapsed();
     }
-    let duration = instant.elapsed();
+    duration /= iter;
 
     // print the output
     println!("- Finished!");
