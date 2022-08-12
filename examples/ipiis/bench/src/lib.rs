@@ -1,4 +1,8 @@
-use std::{net::SocketAddr, sync::Arc, time::Instant};
+use std::{
+    net::SocketAddr,
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 use byte_unit::Byte;
 use ipiis_api::{client::IpiisClient, common::Ipiis};
@@ -26,6 +30,7 @@ pub async fn main(inputs: ObjectData) -> Result<ObjectData> {
     let size: u128 = env::infer("IPIIS_BENCH_SIZE").unwrap_or(1_000_000_000);
     // Number of threads
     let num_threads: u32 = env::infer("IPIIS_BENCH_NUM_THREADS").unwrap_or(4);
+    let iter: u32 = env::infer("IPIIS_BENCH_NUM_ITER").unwrap_or(30);
 
     // create a client
     let client = IpiisClient::genesis(None).await?;
@@ -45,6 +50,7 @@ pub async fn main(inputs: ObjectData) -> Result<ObjectData> {
     println!("- Address: {address}");
     println!("- Data Size: {size}");
     println!("- Number of Threads: {num_threads}");
+    println!("- Number of Iteration: {iter}");
 
     // init data
     println!("- Initializing...");
