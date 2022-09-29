@@ -3,7 +3,7 @@ use ipiis_api::{client::IpiisClient, common::Ipiis};
 use ipis::{
     class::Class,
     core::{anyhow::bail, signed::IsSigned},
-    env::Infer,
+    env::{infer, Infer},
 };
 use ipsis_common::{Ipsis, KIND};
 use rkyv::{Archive, Deserialize, Serialize};
@@ -95,7 +95,7 @@ pub async fn main(inputs: ObjectData) -> Result<ObjectData> {
                 .set_address(
                     KIND.as_ref(),
                     client.account_ref(),
-                    &"127.0.0.1:5001".parse()?,
+                    &infer("ipiis_client_account_primary_address")?,
                 )
                 .await?;
 
