@@ -1,5 +1,9 @@
 use ipiis_api::common::Ipiis;
-use ipis::{core::anyhow::Result, env::Infer, tokio};
+use ipis::{
+    core::anyhow::Result,
+    env::{infer, Infer},
+    tokio,
+};
 use ipsis_api::{common::Ipsis, server::IpsisServer};
 use ipwis_api::{
     client::IpwisClient,
@@ -23,7 +27,7 @@ async fn main() -> Result<()> {
         .set_address(
             ::ipsis_api::common::KIND.as_ref(),
             ipiis.account_ref(),
-            &"127.0.0.1:5001".parse()?,
+            &infer("ipiis_client_account_primary_address")?,
         )
         .await?;
 
