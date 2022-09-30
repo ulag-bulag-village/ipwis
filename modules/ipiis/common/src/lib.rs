@@ -391,6 +391,13 @@ pub mod io {
 
         impl IsSigned for Protocol {}
 
+        #[cfg(target_os = "wasi")]
+        impl Protocol {
+            pub(crate) unsafe fn syscall(self) -> Result<super::response::Protocol> {
+                super::OpCode::Protocol(Box::new(self)).syscall()
+            }
+        }
+
         #[derive(Archive, Serialize, Deserialize)]
         #[archive_attr(derive(CheckBytes))]
         pub struct CallRaw {
