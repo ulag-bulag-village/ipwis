@@ -16,6 +16,8 @@ pub use ipwis_modules_task_common_wasi::program::Program;
 
 #[async_trait]
 pub trait Ipwis {
+    async fn protocol(&self) -> Result<String>;
+
     async fn task_spawn(
         &self,
         task: Data<GuaranteeSigned, Task>,
@@ -42,6 +44,24 @@ impl<IpiisClient> Ipwis for IpiisClient
 where
     IpiisClient: Ipiis + Send + Sync,
 {
+    async fn protocol(&self) -> Result<String> {
+        // next target
+        let target = self.get_account_primary(KIND.as_ref()).await?;
+
+        // external call
+        let (protocol,) = external_call!(
+            client: self,
+            target: KIND.as_ref() => &target,
+            request: crate::io => Protocol,
+            sign: self.sign_owned(target, ())?,
+            inputs: { },
+            outputs: { protocol, },
+        );
+
+        // unpack response
+        Ok(protocol)
+    }
+
     async fn task_spawn(
         &self,
         task: Data<GuaranteeSigned, Task>,
@@ -88,6 +108,15 @@ where
 }
 
 define_io! {
+    Protocol {
+        inputs: { },
+        input_sign: Data<GuaranteeSigned, ()>,
+        outputs: {
+            protocol: String,
+        },
+        output_sign: Data<GuarantorSigned, ()>,
+        generics: { },
+    },
     Spawn {
         inputs: { },
         input_sign: Data<GuaranteeSigned, Task>,

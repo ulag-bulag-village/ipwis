@@ -83,6 +83,11 @@ impl InterruptHandler for IpiisHandler {
                 .await?
                 .to_bytes()
                 .map_err(Into::into),
+            io::OpCode::Protocol(req) => self
+                .handle_protocol(req)
+                .await?
+                .to_bytes()
+                .map_err(Into::into),
             io::OpCode::CallRaw(req) => self
                 .handle_call_raw(memory, req)
                 .await?
@@ -182,6 +187,14 @@ impl IpiisHandler {
     ) -> Result<io::response::SignAsGuarantor> {
         let ipiis = self.map.get(&req.id)?;
         io::response::SignAsGuarantor::sign(ipiis.account_me()?, req.metadata)
+    }
+
+    async unsafe fn handle_protocol(
+        &mut self,
+        req: io::request::Protocol,
+    ) -> Result<io::response::Protocol> {
+        let ipiis = self.map.get(&req.id)?;
+        ipiis.protocol()
     }
 
     async unsafe fn handle_call_raw(

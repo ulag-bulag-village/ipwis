@@ -177,6 +177,15 @@ impl Ipiis for IpiisClient {
         })
     }
 
+    fn protocol(&self) -> Result<String> {
+        unsafe {
+            io::request::Protocol {
+                id: self.id,
+            }
+            .syscall()
+        }
+    }
+
     async fn call_raw(
         &self,
         kind: Option<&Hash>,
@@ -220,9 +229,10 @@ pub mod io {
         SetAccountPrimary(self::request::SetAccountPrimary),
         GetAddress(self::request::GetAddress),
         SetAddress(self::request::SetAddress),
-        CallRaw(self::request::CallRaw),
         SignAsGuarantee(Box<self::request::SignAsGuarantee>),
         SignAsGuarantor(Box<self::request::SignAsGuarantor>),
+        Protocol(self::request::Protocol),
+        CallRaw(self::request::CallRaw),
         Release(self::request::Release),
     }
 
@@ -375,6 +385,14 @@ pub mod io {
 
         #[derive(Archive, Serialize, Deserialize)]
         #[archive_attr(derive(CheckBytes))]
+        pub struct Protocol {
+            pub id: ResourceId,
+        }
+
+        impl IsSigned for Protocol {}
+
+        #[derive(Archive, Serialize, Deserialize)]
+        #[archive_attr(derive(CheckBytes))]
         pub struct CallRaw {
             pub id: ResourceId,
             pub kind: Option<Hash>,
@@ -424,6 +442,8 @@ pub mod io {
         pub type SignAsGuarantee = GuaranteeSigned;
 
         pub type SignAsGuarantor = GuarantorSigned;
+
+        pub type Protocol = String;
 
         #[derive(Archive, Serialize, Deserialize)]
         #[archive_attr(derive(CheckBytes))]

@@ -78,6 +78,10 @@ impl<IpiisClient> Ipwis for IpwisClientInner<IpiisClient>
 where
     IpiisClient: Ipiis + Ipsis + Send + Sync,
 {
+    async fn protocol(&self) -> Result<String> {
+        Ok("wasmtime-ulagbulag".into())
+    }
+
     async fn task_spawn(
         &self,
         task: Data<GuaranteeSigned, Task>,

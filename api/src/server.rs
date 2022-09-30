@@ -46,12 +46,35 @@ handle_external_call!(
     server: IpwisServer => IpwisClientInner<IpiisServer>,
     name: run,
     request: ::ipwis_common::io => {
+        Protocol => handle_protocol,
         Spawn => handle_spawn,
         Poll => handle_poll,
     },
 );
 
 impl IpwisServer {
+    async fn handle_protocol(
+        client: &IpwisClientInner<IpiisServer>,
+        req: ::ipwis_common::io::request::Protocol<'static>,
+    ) -> Result<::ipwis_common::io::response::Protocol<'static>> {
+        // unpack sign
+        let sign_as_guarantee = req.__sign.into_owned().await?;
+
+        // handle data
+        let protocol = client.protocol().await?;
+
+        // sign data
+        let server: &IpiisServer = client.as_ref();
+        let sign = server.sign_as_guarantor(sign_as_guarantee)?;
+
+        // pack data
+        Ok(::ipwis_common::io::response::Protocol {
+            __lifetime: Default::default(),
+            __sign: ::ipis::stream::DynStream::Owned(sign),
+            protocol: ::ipis::stream::DynStream::Owned(protocol),
+        })
+    }
+
     async fn handle_spawn(
         client: &IpwisClientInner<IpiisServer>,
         req: ::ipwis_common::io::request::Spawn<'static>,
