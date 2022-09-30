@@ -46,7 +46,7 @@ pub async fn main(inputs: ObjectData) -> Result<ObjectData> {
         let instant = ::std::time::Instant::now();
         {
             let src = "hello world!".as_bytes();
-            let mut reader = ExternReader::try_from(src)?;
+            let mut reader = ::ipwis_modules_stream_common::ExternReader::try_from(src)?;
 
             let mut dst = Vec::new();
             ::ipis::tokio::io::copy(&mut reader, &mut dst).await?;
@@ -62,7 +62,7 @@ pub async fn main(inputs: ObjectData) -> Result<ObjectData> {
         let instant = ::std::time::Instant::now();
         {
             let src = vec![42u8; 1_000_000_000];
-            let mut reader = ExternReader::try_from(src.as_slice())?;
+            let mut reader = ::ipwis_modules_stream_common::ExternReader::try_from(src.as_slice())?;
 
             let mut dst = Vec::new();
             ::ipis::tokio::io::copy(&mut reader, &mut dst).await?;
