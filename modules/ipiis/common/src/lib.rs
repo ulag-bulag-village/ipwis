@@ -394,7 +394,7 @@ pub mod io {
         #[cfg(target_os = "wasi")]
         impl Protocol {
             pub(crate) unsafe fn syscall(self) -> Result<super::response::Protocol> {
-                super::OpCode::Protocol(Box::new(self)).syscall()
+                super::OpCode::Protocol(self).syscall()
             }
         }
 
