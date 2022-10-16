@@ -25,7 +25,7 @@ pub async fn main(inputs: ObjectData) -> Result<ObjectData> {
     });
     // Address of the target server
     let address: SocketAddr = env::infer::<_, SocketAddr>("IPIIS_BENCH_ADDRESS")
-        .unwrap_or_else(|_| "127.0.0.1:9999".parse().unwrap());
+        .unwrap_or_else(|_| "127.0.0.1:9801".parse().unwrap());
     // Size of benchmarking stream
     let size: u128 = env::infer("IPIIS_BENCH_SIZE").unwrap_or(1_000_000_000);
     // Number of threads
@@ -66,7 +66,7 @@ pub async fn main(inputs: ObjectData) -> Result<ObjectData> {
     println!("- Benchmarking...");
     let mut duration = Duration::default();
     for _ in 0..iter {
-    let instant = Instant::now();
+        let instant = Instant::now();
         futures::future::try_join_all(
             (0..num_threads).map(|_| client.ping(DynStream::ArcVec(data.clone()))),
         )
