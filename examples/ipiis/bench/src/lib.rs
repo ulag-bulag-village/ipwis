@@ -35,7 +35,7 @@ pub async fn main(inputs: ObjectData) -> Result<ObjectData> {
     // create a client
     let client = IpiisClient::genesis(None).await?;
 
-    // registre the server account as primary
+    // register the server account as primary
     client
         .set_account_primary(KIND.as_ref(), &account.account_ref())
         .await?;
