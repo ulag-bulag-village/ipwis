@@ -1,0 +1,49 @@
+[package]
+name = "ipwis-example-webcam"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["Ho Kim <ho.kim@ulagbulag.io>"]
+description = "InterPlanetary WASI Interpretation Service"
+documentation = "https://docs.rs/ipwis"
+license = "MIT OR Apache-2.0"
+readme = "../../README.md"
+homepage = "https://ulagbulag.io/"
+repository = "https://github.com/ulagbulag-village/ipwis"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "ipwis_example_webcam"
+path = "src/main.rs"
+
+[lib]
+name = "ipwis_example_webcam"
+crate-type = ["cdylib"]
+
+[dependencies]
+ipis = { git = "https://github.com/ulagbulag-village/ipis", features = [
+    "derive",
+] }
+ipiis-api = { git = "https://github.com/ulagbulag-village/ipiis" }
+ipiis-modules-bench-common = { git = "https://github.com/ulagbulag-village/ipiis" }
+ipwis-modules-task-entrypoint = { path = "../../modules/task/entrypoint" }
+
+bytecheck = "0.6"
+byte-unit = "4.0"
+rand = "0.8"
+rkyv = { version = "0.7", features = ["archive_le"] }
+
+[target.'cfg(target_os = "wasi")'.dependencies]
+ipwis-modules-task-common-wasi = { path = "../../modules/task/common/wasi" }
+
+[target.'cfg(not(target_os = "wasi"))'.dependencies]
+ipwis-modules-ipiis-api = { path = "../../modules/ipiis/api" }
+ipwis-modules-stream-api = { path = "../../modules/stream/api" }
+ipwis-modules-webcam-api = { path = "../../modules/webcam/api" }
+ipwis-modules-task-api = { path = "../../modules/task/api" }
+ipwis-modules-task-api-wasi = { path = "../../modules/task/api/wasi" }
+ipwis-modules-task-common = { path = "../../modules/task/common" }
+
+[build-dependencies]
+ipwis-modules-task-builder = { path = "../../modules/task/builder" }

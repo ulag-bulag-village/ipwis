@@ -4,6 +4,7 @@ members = [
     "api",
     "common",
     "examples/ipiis/bench",
+    "examples/webcam",
     "kernel",
     "modules/core/api",
     "modules/core/common",
@@ -18,6 +19,8 @@ members = [
     "modules/task/common/wasi",
     "modules/task/demo",
     "modules/task/entrypoint",
+    "modules/webcam/api",
+    "modules/webcam/common",
     "pallet",
     "runtime",
 ]

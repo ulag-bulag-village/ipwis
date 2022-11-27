@@ -225,8 +225,8 @@ impl IpiisHandler {
 
     async unsafe fn handle_release(
         &mut self,
-        req: io::request::Release,
+        io::request::Release { id }: io::request::Release,
     ) -> Result<io::response::Release> {
-        self.map.release_one(&req.id).await
+        self.map.release_one(&id).await
     }
 }

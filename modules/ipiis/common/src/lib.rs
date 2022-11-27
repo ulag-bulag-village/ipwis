@@ -178,12 +178,7 @@ impl Ipiis for IpiisClient {
     }
 
     fn protocol(&self) -> Result<String> {
-        unsafe {
-            io::request::Protocol {
-                id: self.id,
-            }
-            .syscall()
-        }
+        unsafe { io::request::Protocol { id: self.id }.syscall() }
     }
 
     async fn call_raw(

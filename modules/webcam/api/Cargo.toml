@@ -1,0 +1,26 @@
+[package]
+name = "ipwis-modules-webcam-api"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["Ho Kim <ho.kim@ulagbulag.io>"]
+description = "InterPlanetary WASI Interpretation Service"
+documentation = "https://docs.rs/ipwis"
+license = "MIT OR Apache-2.0"
+readme = "../../../README.md"
+homepage = "https://ulagbulag.io/"
+repository = "https://github.com/ulagbulag-village/ipwis"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ipis = { git = "https://github.com/ulagbulag-village/ipis", features = [
+    "derive",
+] }
+ipwis-modules-core-common = { path = "../../core/common" }
+ipwis-modules-stream-api = { path = "../../stream/api" }
+ipwis-modules-task-api-wasi = { path = "../../task/api/wasi" }
+ipwis-modules-task-common-wasi = { path = "../../task/common/wasi" }
+ipwis-modules-webcam-common = { path = "../common" }
+
+nokhwa = "0.9"
